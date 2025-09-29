@@ -108,10 +108,6 @@ project/
 
 ![Login Page](screenshots/login_page.jpg)
 
-### Player Dashboard
-
-![User Page](screenshots/user_page.png)
-
 ### Admin Dashboard
 
 ![Admin Page](screenshots/admin_page.jpg)
@@ -187,13 +183,6 @@ project/
 - `guess`: Player's guess
 - `attempt_number`: Attempt number (1-5)
 - `date`: Timestamp of guess
-
-## 🔧 Configuration
-
-### Environment Variables
-
-- `SECRET_KEY`: Flask secret key (change in production)
-- `DATABASE`: SQLite database file path
 
 ### Customization
 
