@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Play Game - Guess the Word{% endblock %}
+
+{% block content %}
+<div class="game-container">
+  <div class="game-header">
+    <h2>🎯 Guess the Word</h2>
+    <div class="game-info">
+      <p>Guess the 5-letter word in 5 attempts!</p>
+      <p>Daily limit: 3 words per day</p>
+    </div>
+  </div>
+
+  {% if daily_limit_reached %}
+  <div class="limit-reached">
+    <h3>Daily Limit Reached</h3>
+    <p>You've played 3 words today. Come back tomorrow for more!</p>
+  </div>
+  {% elif game_won %}
+  <div class="game-result won">
+    <h3>🎉 Congratulations!</h3>
+    <p>You guessed the word correctly!</p>
+    <a href="{{ url_for('start_new_game') }}" class="btn btn-primary">Play Another Word</a>
+  </div>
+  {% elif game_lost %}
+  <div class="game-result lost">
+    <h3>😔 Better luck next time!</h3>
+    <p>You've used all 5 attempts.</p>
+    <a href="{{ url_for('start_new_game') }}" class="btn btn-primary">Try Another Word</a>
+  </div>
+  {% else %}
+  {% if not previous_guesses and not current_word_id %}
+  <div class="start-game">
+    <h3>Ready to play?</h3>
+    <p>Click the button below to start a new game!</p>
+    <a href="{{ url_for('start_new_game') }}" class="btn btn-primary">Start New Game</a>
+  </div>
+  {% else %}
+  {% if previous_guesses %}
+  <div class="game-board">
+    <h3>Your Guesses:</h3>
+    <div class="guesses-grid">
+      {% for guess_data in previous_guesses %}
+      <div class="guess-row">
+        {% for i in range(5) %}
+        <div class="guess-cell {{ guess_data.feedback[i] }}">
+          {{ guess_data.guess[i] }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if current_attempts < 5 and not game_won and not game_lost %} <div class="guess-form">
+    <form method="POST" action="{{ url_for('make_guess') }}">
+      <div class="form-group">
+        <label for="guess">Enter your guess (5 letters):</label>
+        <input type="text" id="guess" name="guess" maxlength="5" pattern="[A-Za-z]{5}" required
+          placeholder="Enter 5-letter word" style="text-transform: uppercase;">
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Guess</button>
+    </form>
+    <p class="attempts-info">Attempt {{ current_attempts + 1 }} of 5</p>
+</div>
+{% endif %}
+{% endif %}
+{% endif %}
+
+<div class="game-rules">
+  <h3>How to Play:</h3>
+  <ul>
+    <li><span class="color-demo green">🟩</span> Green: Correct letter in correct position</li>
+    <li><span class="color-demo orange">🟧</span> Orange: Correct letter in wrong position</li>
+    <li><span class="color-demo grey">⬜</span> Grey: Letter not in the word</li>
+  </ul>
+</div>
+</div>
+
+<script>
+  // Auto-uppercase input
+  document.getElementById('guess')?.addEventListener('input', function (e) {
+    e.target.value = e.target.value.toUpperCase();
+  });
+</script>
+{% endblock %}

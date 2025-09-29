@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Reports - Guess the Word{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+  <div class="admin-header">
+    <h2>📊 Admin Reports</h2>
+    <p>View game statistics and user activity</p>
+  </div>
+
+  <div class="reports-grid">
+    <div class="report-card">
+      <h3>📅 Daily Report</h3>
+      <div id="daily-report" class="report-content">
+        <div class="loading">Loading daily report...</div>
+      </div>
+      <button onclick="loadDailyReport()" class="btn btn-secondary">Refresh</button>
+    </div>
+
+    <div class="report-card">
+      <h3>👥 User Report</h3>
+      <div id="user-report" class="report-content">
+        <div class="loading">Loading user report...</div>
+      </div>
+      <button onclick="loadUserReport()" class="btn btn-secondary">Refresh</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function loadDailyReport() {
+    const reportDiv = document.getElementById('daily-report');
+    reportDiv.innerHTML = '<div class="loading">Loading...</div>';
+
+    fetch('/api/daily_report')
+      .then(response => response.json())
+      .then(data => {
+        reportDiv.innerHTML = `
+                <div class="report-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Date:</span>
+                        <span class="stat-value">${data.date}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Users Played:</span>
+                        <span class="stat-value">${data.users_played}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Words Tried:</span>
+                        <span class="stat-value">${data.words_tried}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Correct Guesses:</span>
+                        <span class="stat-value">${data.correct_guesses}</span>
+                    </div>
+                </div>
+            `;
+      })
+      .catch(error => {
+        reportDiv.innerHTML = '<div class="error">Error loading daily report</div>';
+        console.error('Error:', error);
+      });
+  }
+
+  function loadUserReport() {
+    const reportDiv = document.getElementById('user-report');
+    reportDiv.innerHTML = '<div class="loading">Loading...</div>';
+
+    fetch('/api/user_report')
+      .then(response => response.json())
+      .then(data => {
+        if (data.length === 0) {
+          reportDiv.innerHTML = '<div class="no-data">No user data available</div>';
+          return;
+        }
+
+        let tableHTML = `
+                <div class="user-table-container">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Date Registered</th>
+                                <th>Words Tried</th>
+                                <th>Correct Guesses</th>
+                                <th>Success Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+        data.forEach(user => {
+          const successRate = user.words_tried > 0
+            ? Math.round((user.correct_guesses / user.words_tried) * 100)
+            : 0;
+
+          tableHTML += `
+                    <tr>
+                        <td>${user.username}</td>
+                        <td>${new Date(user.date_registered).toLocaleDateString()}</td>
+                        <td>${user.words_tried}</td>
+                        <td>${user.correct_guesses}</td>
+                        <td>${successRate}%</td>
+                    </tr>
+                `;
+        });
+
+        tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+        reportDiv.innerHTML = tableHTML;
+      })
+      .catch(error => {
+        reportDiv.innerHTML = '<div class="error">Error loading user report</div>';
+        console.error('Error:', error);
+      });
+  }
+
+  // Load reports on page load
+  document.addEventListener('DOMContentLoaded', function () {
+    loadDailyReport();
+    loadUserReport();
+  });
+</script>
+{% endblock %}
